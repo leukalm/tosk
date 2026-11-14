@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
+	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -23,7 +24,8 @@ func version() string {
 		return Version
 	}
 	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
-		return info.Main.Version
+		// Module versions carry a "v" that release builds do not show.
+		return strings.TrimPrefix(info.Main.Version, "v")
 	}
 	return Version
 }

@@ -6,6 +6,7 @@ Go CLI that prepares git worktrees (see README.md, which is the product spec).
 
 - `make build` builds `bin/tosk`; `make test` runs the tests; `make lint` runs vet + gofmt check.
 - `go run . <command>` to try the CLI from source.
+- `make release BUMP=patch|minor|major|X.Y.Z` cuts a release (`scripts/release.sh`, `ARGS=--dry-run` to try). Release notes are the `## [Unreleased]` section of `CHANGELOG.md`: add to it as you change things.
 - Go is installed with Homebrew (`/opt/homebrew/bin/go`).
 
 ## Layout
