@@ -142,6 +142,7 @@ A profile overrides or extends the base config. Select it with `tosk add --profi
 | `tosk var [name]` | Print one or all variables of the current worktree |
 | `tosk run <step>` | Re-run a single step by name, for debugging a config |
 | `tosk doctor` | Check hook installation, git version, orphaned allocations |
+| `tosk skill [--global]` | Install the Agent Skill for coding agents |
 
 You can keep using plain `git worktree add`: the hook prepares the new worktree for you. `tosk rm` exists because git has no hook on removal.
 
@@ -189,6 +190,24 @@ profile: { agent: "branch matches '^worktree-'" }
 ```
 
 Claude Code locks its worktrees while a session runs: `tosk rm` refuses a locked worktree, and `tosk rm --force` removes it anyway. When Claude Code deletes a worktree itself at the end of a session, Tosk is not told (git has no removal hook), so the `remove` phase does not run: keep it for things you can clean up by hand, or remove agent worktrees with `tosk rm`.
+
+### Agent skill
+
+Tosk ships an [Agent Skill](https://code.claude.com/docs/en/skills) that teaches coding agents to use it: read the worktree's own port and database names with `tosk var` before starting a server, and write or debug `.tosk.yml`. Install it one of two ways, not both:
+
+```sh
+tosk skill            # into .claude/skills/tosk/ of the repository: commit it, every agent on the repo gets it
+tosk skill --global   # into ~/.claude/skills/tosk/, for all your repositories
+```
+
+Or, in Claude Code, as a plugin:
+
+```
+/plugin marketplace add leukalm/tosk
+/plugin install tosk@tosk
+```
+
+`tosk skill` writes the skill matching your version of Tosk: run it again after upgrading.
 
 We recommend **not** defining `WorktreeCreate` / `WorktreeRemove` hooks in Claude Code alongside Tosk: they replace the default worktree logic and currently disable the cleanup prompt at session exit.
 

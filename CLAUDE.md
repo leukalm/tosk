@@ -21,6 +21,7 @@ Go CLI that prepares git worktrees (see README.md, which is the product spec).
 - `internal/vars`: built-in variables, slug, `{{…}}` interpolation.
 - `internal/hook`: `post-checkout` hook installation and chaining.
 - `testdata/`: sample configs shared by tests.
+- `plugin/`: the Claude Code plugin (`.claude-plugin/plugin.json`) and its Agent Skill `plugin/skills/tosk/SKILL.md`, which `plugin/skills/embed.go` embeds for `tosk skill`. The marketplace is `.claude-plugin/marketplace.json` at the root. Keep the skill in step with the CLI: a command, flag or config change usually needs a line there. Check with `claude plugin validate . --strict` and `claude plugin validate ./plugin --strict`.
 
 ## Conventions
 

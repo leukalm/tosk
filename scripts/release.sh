@@ -7,8 +7,9 @@
 # 2. checks: on main, clean tree, in sync with origin, CHANGELOG has notes
 #    under "## [Unreleased]";
 # 3. runs the linters and tests;
-# 4. turns "## [Unreleased]" into "## [X.Y.Z] - <date>" in CHANGELOG.md and
-#    updates the links at the bottom;
+# 4. turns "## [Unreleased]" into "## [X.Y.Z] - <date>" in CHANGELOG.md,
+#    updates the links at the bottom, and sets the version of the Claude
+#    Code plugin (plugin/.claude-plugin/plugin.json);
 # 5. commits "Release X.Y.Z" and creates the annotated tag vX.Y.Z;
 # 6. asks before pushing main and the tag (--yes skips the question): the
 #    tag starts .github/workflows/release.yml, which publishes the binaries
@@ -20,7 +21,7 @@
 set -euo pipefail
 
 usage() {
-	sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'
+	sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
 	exit "${1:-2}"
 }
 
@@ -141,17 +142,33 @@ awk -v version="$version" -v today="$today" -v link="$link" \
 	}
 ' "$changelog" >"$tmp"
 
+# The Claude Code plugin carries the version too.
+plugin=plugin/.claude-plugin/plugin.json
+plugin_tmp=$(mktemp)
+trap 'rm -f "$tmp" "$plugin_tmp"' EXIT
+if [ -f "$plugin" ]; then
+	sed -E 's/^([[:space:]]*"version":[[:space:]]*")[^"]*(")/\1'"$version"'\2/' "$plugin" >"$plugin_tmp"
+	grep -q "\"version\": \"$version\"" "$plugin_tmp" || die "no \"version\" field to update in $plugin"
+fi
+
 if $dry_run; then
 	say "dry run: CHANGELOG.md would change like this"
 	diff -u "$changelog" "$tmp" || true
+	if [ -f "$plugin" ]; then
+		diff -u "$plugin" "$plugin_tmp" || true
+	fi
 	say "dry run: nothing was changed"
 	exit 0
 fi
 cp "$tmp" "$changelog"
+if [ -f "$plugin" ]; then
+	cp "$plugin_tmp" "$plugin"
+fi
 
 # --- 5. commit and tag -------------------------------------------------------
 
 git add "$changelog"
+[ -f "$plugin" ] && git add "$plugin"
 git commit --quiet -m "Release $version"
 git tag -a "$tag" -m "Tosk $version"
 say "committed \"Release $version\" and tagged $tag"

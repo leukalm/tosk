@@ -1,0 +1,14 @@
+{
+  "name": "tosk",
+  "owner": { "name": "Cyril Mazier", "url": "https://github.com/leukalm" },
+  "description": "Tosk, environment preparation for git worktrees.",
+  "plugins": [
+    {
+      "name": "tosk",
+      "source": "./plugin",
+      "description": "Teaches Claude Code to use Tosk: run each git worktree on its own ports and database names, and write or debug .tosk.yml.",
+      "category": "development",
+      "tags": ["git", "worktree"]
+    }
+  ]
+}

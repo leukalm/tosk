@@ -247,3 +247,39 @@ func TestNotInRepository(t *testing.T) {
 		t.Errorf("err = %v", err)
 	}
 }
+
+func TestSkill(t *testing.T) {
+	main := newRepo(t, "create: []\n")
+	path := filepath.Join(main, ".claude", "skills", "tosk", "SKILL.md")
+
+	out, err := run(t, "skill")
+	if err != nil || !strings.Contains(out, "wrote") {
+		t.Fatalf("skill: %v\n%s", err, out)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil || !strings.HasPrefix(string(data), "---\nname: tosk\ndescription: ") {
+		t.Fatalf("SKILL.md: %v\n%.80s", err, data)
+	}
+	if out, err := run(t, "skill"); err != nil || !strings.Contains(out, "up to date") {
+		t.Errorf("second run: %v\n%s", err, out)
+	}
+	if err := os.WriteFile(path, []byte("old"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if out, err := run(t, "skill"); err != nil || !strings.Contains(out, "updated") {
+		t.Errorf("update: %v\n%s", err, out)
+	}
+
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	if _, err := run(t, "skill", "--global"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(home, ".claude", "skills", "tosk", "SKILL.md")); err != nil {
+		t.Error(err)
+	}
+	if out, err := run(t, "skill", "--print"); err != nil || !strings.Contains(out, "tosk var port") {
+		t.Errorf("print: %v\n%.80s", err, out)
+	}
+}

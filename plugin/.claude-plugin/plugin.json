@@ -1,0 +1,10 @@
+{
+  "name": "tosk",
+  "description": "Teaches Claude Code to use Tosk: run each git worktree on its own ports and database names, and write or debug .tosk.yml.",
+  "version": "0.1.1",
+  "author": { "name": "Cyril Mazier", "url": "https://github.com/leukalm" },
+  "homepage": "https://github.com/leukalm/tosk",
+  "repository": "https://github.com/leukalm/tosk",
+  "license": "MIT",
+  "keywords": ["git", "worktree", "tosk", "environment"]
+}

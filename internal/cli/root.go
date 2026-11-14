@@ -68,6 +68,7 @@ func newRoot() *cobra.Command {
 		newVar(),
 		newRun(),
 		newDoctor(),
+		newSkill(),
 		newWatch(),
 		newHook(),
 	)

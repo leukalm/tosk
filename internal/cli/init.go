@@ -114,8 +114,11 @@ Otherwise Tosk is appended to the post-checkout script git runs.`,
 				return fmt.Errorf("could not edit %s: %s", setup.File, setup.ManualSteps())
 			}
 			if setup.Manager == hook.Lefthook {
-				return lefthookInstall(cmd, main)
+				if err := lefthookInstall(cmd, main); err != nil {
+					return err
+				}
 			}
+			fmt.Fprintln(out, "tosk: run `tosk skill` to teach coding agents (Claude Code…) to use Tosk in this repository")
 			return nil
 		},
 	}
