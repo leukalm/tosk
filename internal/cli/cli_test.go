@@ -112,6 +112,34 @@ func TestRmRemovesWorktree(t *testing.T) {
 
 // git refuses to remove a worktree with untracked files. tosk rm must find
 // that out before the remove phase, which is destructive.
+// Claude Code locks the worktrees it creates. rm refuses them before the
+// remove phase, and --force removes them for real.
+func TestRmLockedWorktree(t *testing.T) {
+	main := newRepo(t, "remove:\n  - run: echo dropped >> ../removed.log\n")
+	if out, err := run(t, "add", "feat/x"); err != nil {
+		t.Fatalf("add: %v\n%s", err, out)
+	}
+	wt := filepath.Join(filepath.Dir(main), "app-feat-x")
+	log := filepath.Join(filepath.Dir(main), "removed.log")
+	gitCmd(t, main, "worktree", "lock", "--reason", "claude session", wt)
+
+	if _, err := run(t, "rm", "feat/x"); err == nil || !strings.Contains(err.Error(), "locked") {
+		t.Errorf("rm: err = %v", err)
+	}
+	if _, err := os.Stat(log); !errors.Is(err, fs.ErrNotExist) {
+		t.Error("the remove phase ran although the worktree stays")
+	}
+	if out, err := run(t, "rm", "--force", "feat/x"); err != nil {
+		t.Fatalf("rm --force: %v\n%s", err, out)
+	}
+	if _, err := os.Stat(wt); !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("worktree still there: %v", err)
+	}
+	if data, _ := os.ReadFile(log); string(data) != "dropped\n" {
+		t.Errorf("removed.log = %q", data)
+	}
+}
+
 func TestRmDirtyWorktreeRunsNothing(t *testing.T) {
 	main := newRepo(t, "remove:\n  - run: echo dropped >> ../removed.log\n")
 	if out, err := run(t, "add", "feat/x"); err != nil {

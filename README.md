@@ -181,7 +181,17 @@ On older git versions, `run` steps do the same job without the plugin layer.
 
 ## Coding agents
 
-Tosk needs no agent-specific configuration. Claude Code, Codex and friends create worktrees with the `git` CLI, so the `post-checkout` path handles them; use a profile rule to give them their own preparation. We recommend **not** defining `WorktreeCreate` / `WorktreeRemove` hooks in Claude Code alongside Tosk: they replace the default worktree logic and currently disable the cleanup prompt at session exit.
+Tosk needs no agent-specific configuration. Coding agents create worktrees with the `git` CLI, so the `post-checkout` path handles them; use a profile rule to give them their own preparation.
+
+With Claude Code, `claude --worktree <name>` creates `.claude/worktrees/<name>` on a branch `worktree-<name>`, and Tosk prepares it before the session starts. Select a profile for these worktrees with:
+
+```yaml
+profile: { agent: "branch matches '^worktree-'" }
+```
+
+Claude Code locks its worktrees while a session runs: `tosk rm` refuses a locked worktree, and `tosk rm --force` removes it anyway. When Claude Code deletes a worktree itself at the end of a session, Tosk is not told (git has no removal hook), so the `remove` phase does not run: keep it for things you can clean up by hand, or remove agent worktrees with `tosk rm`.
+
+We recommend **not** defining `WorktreeCreate` / `WorktreeRemove` hooks in Claude Code alongside Tosk: they replace the default worktree logic and currently disable the cleanup prompt at session exit.
 
 ## Trust
 
