@@ -19,11 +19,21 @@ jobs:
           go-version-file: go.mod
       - run: go vet ./...
       - run: go test -race ./...
+      # The notes of this version: its section of CHANGELOG.md.
+      - name: Release notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            /^## / { if (found) exit; if (index($0, "[" v "]")) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if [ ! -s "$RUNNER_TEMP/notes.md" ]; then
+            echo "CHANGELOG.md has no section for $version" >&2
+            exit 1
+          fi
       - uses: goreleaser/goreleaser-action@v6
         with:
-          version: "~> v2"
-          args: release --clean
+          version: "v2.20.2"
+          args: release --clean --release-notes=${{ runner.temp }}/notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Token with write access to the tap and bucket repositories.
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}

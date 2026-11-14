@@ -13,6 +13,8 @@ builds:
     goarch: [amd64, arm64]
     ldflags:
       - -s -w -X github.com/leukalm/tosk/internal/cli.Version={{ .Version }}
+    # Reproducible builds: file times come from the commit, not the clock.
+    mod_timestamp: "{{ .CommitTimestamp }}"
 
 archives:
   - formats: [tar.gz]
@@ -23,27 +25,15 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# Release notes come from CHANGELOG.md (see .github/workflows/release.yml).
 changelog:
-  sort: asc
-  filters:
-    exclude: ["^docs:", "^test:", "^chore:"]
+  disable: true
 
-# `brew install tosk` and `scoop install tosk` need these two repositories
-# to exist: leukalm/homebrew-tap and leukalm/scoop-bucket.
-brews:
-  - repository:
-      owner: leukalm
-      name: homebrew-tap
-      token: "{{ .Env.PACKAGES_TOKEN }}"
-    homepage: https://github.com/leukalm/tosk
-    description: Environment preparation for git worktrees
-    license: MIT
+release:
+  # v0.x is a beta: say so on the release page.
+  header: |
+    Beta release. The configuration format may still change before 1.0.
 
-scoops:
-  - repository:
-      owner: leukalm
-      name: scoop-bucket
-      token: "{{ .Env.PACKAGES_TOKEN }}"
-    homepage: https://github.com/leukalm/tosk
-    description: Environment preparation for git worktrees
-    license: MIT
+# Homebrew and Scoop packages are not published yet. They need the
+# repositories leukalm/homebrew-tap and leukalm/scoop-bucket and a token
+# with write access to them; see GoReleaser's `brews` and `scoops`.

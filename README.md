@@ -35,11 +35,10 @@ Hook managers like Husky and Lefthook are built around commits. Tosk is built ar
 ## Install
 
 ```sh
-brew install leukalm/tap/tosk                                    # macOS / Linux
-scoop bucket add leukalm https://github.com/leukalm/scoop-bucket  # Windows
-scoop install tosk
 go install github.com/leukalm/tosk@latest
 ```
+
+Or download a binary for macOS, Linux or Windows from the [releases page](https://github.com/leukalm/tosk/releases) and put it on your `PATH`. Homebrew and Scoop packages will follow.
 
 Then, once per repository:
 
@@ -207,7 +206,7 @@ If you create worktrees for branches you do not trust (fork pull requests, agent
 
 ## Status
 
-Early. The core (`sync`, `add`, `rm`, steps, providers, profiles) works and is tested on macOS. Windows builds but has not been tried yet. `tosk watch` is not implemented. Homebrew and Scoop packages are not published yet: use `go install` for now.
+Beta (0.1). The core (`sync`, `add`, `rm`, steps, providers, profiles, Husky and Lefthook integration) works and is tested on macOS; Linux and Windows pass the test suite in CI but have not been used for real yet. `tosk watch` is not implemented. The configuration format may still change before 1.0: see [CHANGELOG.md](CHANGELOG.md).
 
 ## Name
 
