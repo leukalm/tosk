@@ -4,6 +4,8 @@ All notable changes to Tosk are listed here. The format follows [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-14
+
 ### Added
 
 - An Agent Skill that teaches coding agents to use Tosk: read the worktree's own port and names with `tosk var` before starting a server, write and debug `.tosk.yml`. `tosk skill` installs it in the repository (`.claude/skills/tosk/`, to commit) or with `--global` for all your repositories; it always matches the installed version of Tosk.
@@ -45,6 +47,7 @@ First beta.
 - `tosk watch` is not implemented.
 - Homebrew and Scoop packages are not published: install with `go install` or from the release binaries.
 
-[Unreleased]: https://github.com/leukalm/tosk/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/leukalm/tosk/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/leukalm/tosk/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/leukalm/tosk/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/leukalm/tosk/releases/tag/v0.1.0
