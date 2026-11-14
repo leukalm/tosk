@@ -435,7 +435,8 @@ func (e *Engine) event(ctx context.Context, c *Target, name string) error {
 	if err != nil || !v.AtLeast(2, 36) {
 		return nil // `git hook run` does not exist
 	}
-	cmd := exec.CommandContext(ctx, "git", "hook", "run", "--ignore-missing", name)
+	args := append([]string{"hook", "run", "--ignore-missing"}, e.hookRunFlags(ctx)...)
+	cmd := exec.CommandContext(ctx, "git", append(args, name)...)
 	cmd.Dir = c.WT.Path
 	cmd.Env = append(git.CleanEnv(), c.Vars.Env()...)
 	cmd.Stdout, cmd.Stderr = e.out, e.err
@@ -443,4 +444,21 @@ func (e *Engine) event(ctx context.Context, c *Target, name string) error {
 		return fmt.Errorf("%s hook: %w", name, err)
 	}
 	return nil
+}
+
+// hookRunFlags returns the extra flags `git hook run` needs for Tosk's own
+// events. Recent git refuses hook names it does not know unless told
+// otherwise with --allow-unknown-hook-name; older git has no such option and
+// would reject it. So the option is passed only when `git hook run -h`
+// lists it. The answer is computed once per engine.
+func (e *Engine) hookRunFlags(ctx context.Context) []string {
+	e.hookFlagsOnce.Do(func() {
+		// -h exits 129 by design: only the text matters.
+		out, _ := exec.CommandContext(ctx, "git", "hook", "run", "-h").CombinedOutput()
+		if strings.Contains(string(out), "--allow-unknown-hook-name") ||
+			strings.Contains(string(out), "--[no-]allow-unknown-hook-name") {
+			e.hookFlags = []string{"--allow-unknown-hook-name"}
+		}
+	})
+	return e.hookFlags
 }

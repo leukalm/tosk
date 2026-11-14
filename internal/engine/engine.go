@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/leukalm/tosk/internal/config"
@@ -31,6 +32,9 @@ type Engine struct {
 	profile string
 
 	states map[string]*state.State
+
+	hookFlagsOnce sync.Once
+	hookFlags     []string
 }
 
 // Options configures an Engine.

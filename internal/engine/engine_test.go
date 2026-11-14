@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -248,7 +249,7 @@ func TestStateIsNotInherited(t *testing.T) {
 	gitCmd(t, main, "worktree", "add", "-q", "../from-main", "-b", "feat/a")
 	gitCmd(t, one, "worktree", "add", "-q", "../from-one", "-b", "feat/b")
 
-	e, out = newEngine(t, main)
+	e, _ = newEngine(t, main)
 	for _, name := range []string{"from-main", "from-one"} {
 		c, err := e.Inspect(t.Context(), worktree(t, e, name))
 		if err != nil {
@@ -447,5 +448,29 @@ func TestCancelStopsSteps(t *testing.T) {
 	}
 	if loadState(t, worktree(t, e, "one").Path).Created {
 		t.Error("a cancelled worktree must not be marked created")
+	}
+}
+
+// Tosk's own events go through `git hook run`, which recent git restricts
+// to known hook names: a script for tosk-post-create must still run, and
+// a repository without one must not fail.
+func TestPostCreateEvent(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("hook scripts need sh")
+	}
+	main := newRepo(t)
+	write(t, filepath.Join(main, config.FileName), "vars:\n  db: \"app_{{slug}}\"\n")
+	gitCmd(t, main, "worktree", "add", "-q", "../one", "-b", "feat/one")
+	hook := filepath.Join(main, ".git", "hooks", "tosk-post-create")
+	write(t, hook, "#!/bin/sh\necho \"$TOSK_DB\" > event.txt\n")
+	if err := os.Chmod(hook, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	e, out := newEngine(t, main)
+	if err := e.SyncAll(t.Context()); err != nil {
+		t.Fatalf("sync: %v\n%s", err, out)
+	}
+	if got := read(t, filepath.Join(worktree(t, e, "one").Path, "event.txt")); got != "app_feat_one\n" {
+		t.Errorf("event.txt = %q", got)
 	}
 }
