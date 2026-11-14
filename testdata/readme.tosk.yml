@@ -1,0 +1,27 @@
+vars:
+  port: { provider: port, base: 8100, range: 100 }
+  db:   "myapp_{{slug}}"
+
+create:
+  - copy: .env
+  - copy: "config/*.local.properties"
+  - link: node_modules
+  - template: config/application-local.properties.tpl
+  - replace: { file: .env, match: "^PORT=.*", with: "PORT={{port}}" }
+  - write:   { file: .tosk-env, content: "DB_NAME={{db}}\nPORT={{port}}\n" }
+  - run: ./scripts/create-db.sh {{db}}
+  - run: mvn -q dependency:go-offline
+  - run: { cmd: ./scripts/seed.sh, when: "exists('data/seed.sql')" }
+
+sync:
+  - run: { cmd: "./scripts/migrate.sh {{db}}", mode: always }
+
+remove:
+  - run: ./scripts/drop-db.sh {{db}}
+  - run: docker compose -p {{slug}} down --remove-orphans
+
+profiles:
+  agent:
+    create:
+      - skip: [link:node_modules]
+      - run: npm ci --prefer-offline
