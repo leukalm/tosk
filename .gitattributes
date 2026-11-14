@@ -1,0 +1,3 @@
+# LF everywhere, on every platform: the embedded SKILL.md must be byte for
+# byte the same, and shell scripts break with CRLF.
+* text=auto eol=lf
