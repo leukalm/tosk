@@ -4,6 +4,8 @@ All notable changes to Tosk are listed here. The format follows [Keep a Changelo
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-14
+
 ### Fixed
 
 - Release notes on the GitHub release page are taken from this changelog (they were missing for 0.1.0 and were added by hand).
@@ -38,5 +40,6 @@ First beta.
 - `tosk watch` is not implemented.
 - Homebrew and Scoop packages are not published: install with `go install` or from the release binaries.
 
-[Unreleased]: https://github.com/leukalm/tosk/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/leukalm/tosk/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/leukalm/tosk/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/leukalm/tosk/releases/tag/v0.1.0
