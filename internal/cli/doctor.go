@@ -4,9 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"os"
 	"os/exec"
-	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -66,11 +65,14 @@ func newDoctor() *cobra.Command {
 			if hooks, err := git.HooksDir(ctx, main); err != nil {
 				fail("%v", err)
 			} else {
-				script, _ := os.ReadFile(filepath.Join(hooks, "post-checkout"))
-				if hook.Installed(string(script)) {
-					ok("post-checkout hook installed in %s", hooks)
+				setup := hook.Detect(main, hooks)
+				if err := setup.Check(); err != nil {
+					fail("%v", err)
 				} else {
-					fail("post-checkout hook not installed in %s (run `tosk init`)", hooks)
+					ok("post-checkout hook registered in %s", setup.File)
+				}
+				if setup.Manager == hook.Husky && cfg != nil && !copiesHusky(cfg) {
+					warn("with Husky, worktrees added from a linked worktree run no hook: add `- copy: .husky/_` to create")
 				}
 			}
 			if _, err := exec.LookPath("tosk"); err != nil {
@@ -121,4 +123,15 @@ func problemsError(n int) error {
 		return errors.New("1 problem found")
 	}
 	return fmt.Errorf("%d problems found", n)
+}
+
+// copiesHusky reports whether the config copies Husky's generated hooks
+// into new worktrees.
+func copiesHusky(cfg *config.Config) bool {
+	for _, s := range cfg.Create {
+		if s.Kind == config.Copy && strings.TrimSuffix(s.Arg, "/") == ".husky/_" {
+			return true
+		}
+	}
+	return false
 }

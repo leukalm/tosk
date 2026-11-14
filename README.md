@@ -47,7 +47,13 @@ Then, once per repository:
 tosk init
 ```
 
-This writes a `.tosk.yml` you commit, and registers Tosk on the repository's `post-checkout` hook. If Husky, Lefthook or a plain hook script is already there, Tosk chains after it instead of replacing it.
+This writes a `.tosk.yml` you commit, and registers Tosk on the repository's `post-checkout` hook, through the hook manager you already use:
+
+- **Lefthook**: a `tosk` command is added to the `post-checkout` hook in `lefthook.yml`, then `lefthook install` is run. If your config already has a `post-checkout` hook, or is TOML or JSON, Tosk leaves it untouched and prints the lines to add.
+- **Husky**: Tosk is appended to `.husky/post-checkout`, which you commit. The starter `.tosk.yml` also copies `.husky/_` into each new worktree: Husky's generated hooks are gitignored, and without them git runs no hook for a worktree added *from* that worktree.
+- **Plain hooks**: Tosk is appended to the existing `post-checkout` script, or creates it.
+
+Entries in committed files call `tosk` through `PATH`, and do nothing for teammates who have not installed it. `tosk doctor` checks that the hook is registered and active.
 
 ## Configure
 
